@@ -1,0 +1,39 @@
+---
+- name: Install Java
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Java on RedHat and Amazon Linux machine
+      yum:
+        name: java
+        state: installed
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Java on Ubuntu machine
+      apt:
+        name: default-jdk
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Download the tomcat
+      get_url:
+        url: https://mirror.olnevhost.net/pub/apache/tomcat/tomcat-8/v8.5.57/bin/apache-tomcat-8.5.57.tar.gz
+        dest: /opt
+
+    - name: Untar the tomcat zip file
+      unarchive:
+        src: /opt/apache-tomcat-8.5.57.tar.gz
+        dest: /opt
+        remote_src: yes
+
+    - name: Execution level permission for tomcat directory
+      file:
+        path: /opt/apache-tomcat-8.5.57/bin/startup.sh
+        mode: 0777
+
+    - name: Start the tomcat services
+      shell: nohup ./startup.sh
+      args:
+        chdir: /opt/apache-tomcat-8.5.57/bin
+
+
